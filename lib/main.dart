@@ -1010,63 +1010,99 @@ class ProfileScreen extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 // Pantalla Dual: Sirve para gestionar tarjetas (Perfil) y para seleccionar (Booking)
-class PaymentMethodsScreen extends StatelessWidget {
+// PANTALLA DE MÉTODOS DE PAGO (MEJORADA: STATEFUL + TODAS LAS FRANQUICIAS)
+class PaymentMethodsScreen extends StatefulWidget {
   final bool isSelectionMode;
   const PaymentMethodsScreen({super.key, required this.isSelectionMode});
 
   @override
+  State<PaymentMethodsScreen> createState() => _PaymentMethodsScreenState();
+}
+
+class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
+  // Índice de la tarjeta seleccionada por defecto (ej: 1 = Visa)
+  int _selectedIndex = 1;
+
+  // Lista de métodos de pago (Datos simulados)
+  final List<Map<String, dynamic>> _methods = [
+    {'name': 'Efectivo', 'icon': FontAwesomeIcons.moneyBill},
+    {'name': 'Visa **** 4242', 'icon': FontAwesomeIcons.ccVisa},
+    {'name': 'MasterCard **** 5567', 'icon': FontAwesomeIcons.ccMastercard},
+    {'name': 'Amex **** 1001', 'icon': FontAwesomeIcons.ccAmex},
+    {'name': 'Diners **** 0022', 'icon': FontAwesomeIcons.ccDinersClub},
+  ];
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isSelectionMode ? "Seleccionar Método" : "Métodos de Pago")),
-      body: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            // Opción Efectivo
-            _paymentOption(context, "Efectivo", FontAwesomeIcons.moneyBill, isSelectionMode),
-            const SizedBox(height: 15),
-            // Tarjetas guardadas
-            _paymentOption(context, "Visa **** 4242", FontAwesomeIcons.ccVisa, isSelectionMode),
-            _paymentOption(context, "Mastercard **** 9988", FontAwesomeIcons.ccMastercard, isSelectionMode),
+      appBar: AppBar(title: Text(widget.isSelectionMode ? "Seleccionar Método" : "Métodos de Pago")),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(20),
+        // +1 para incluir el botón de "Agregar Nueva" al final
+        itemCount: _methods.length + 1,
+        itemBuilder: (context, index) {
+          // Si es el último elemento, mostramos el botón de agregar
+          if (index == _methods.length) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: OutlinedButton.icon(
+                  onPressed: (){
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Abrir escáner de tarjeta...")));
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text("Agregar Nueva Tarjeta")
+              ),
+            );
+          }
 
-            const SizedBox(height: 20),
-            // Botón agregar
-            OutlinedButton.icon(
-                onPressed: (){
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Funcionalidad para agregar tarjeta")));
-                },
-                icon: const Icon(Icons.add),
-                label: const Text("Agregar Nueva Tarjeta")
-            )
-          ]
-      ),
-    );
-  }
+          final method = _methods[index];
+          final isSelected = _selectedIndex == index;
 
-  Widget _paymentOption(BuildContext context, String name, IconData icon, bool selectable) {
-    return GestureDetector(
-      onTap: () {
-        if (selectable) {
-          // Si estamos seleccionando, devolvemos los datos a la pantalla anterior
-          Navigator.pop(context, {'name': name, 'icon': icon});
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 24, color: AppColors.blue),
-            const SizedBox(width: 15),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const Spacer(),
-            if (selectable) const Icon(Icons.touch_app, color: AppColors.orange, size: 20)
-          ],
-        ),
+          return GestureDetector(
+            onTap: () {
+              setState(() => _selectedIndex = index);
+              // Si estamos en modo selección (desde Booking), devolvemos el dato y cerramos
+              if (widget.isSelectionMode) {
+                // Pequeño delay para que el usuario vea el check verde antes de cerrar
+                Future.delayed(const Duration(milliseconds: 150), () {
+                  Navigator.pop(context, method);
+                });
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                // Borde Verde si está seleccionado, Gris si no
+                border: Border.all(
+                    color: isSelected ? AppColors.green : Colors.grey.shade200,
+                    width: isSelected ? 2 : 1
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(method['icon'], size: 30, color: AppColors.blue),
+                  const SizedBox(width: 15),
+                  Text(
+                      method['name'],
+                      style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 16
+                      )
+                  ),
+                  const Spacer(),
+                  // EL CHECK VERDE ✅
+                  if (isSelected)
+                    const Icon(Icons.check_circle, color: AppColors.green)
+                  else if (widget.isSelectionMode)
+                    const Icon(Icons.circle_outlined, color: Colors.grey)
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
