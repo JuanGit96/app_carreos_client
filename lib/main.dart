@@ -14,6 +14,10 @@ import 'dart:async'; // Librería para funciones asíncronas (Timers)
 // ---------------------------------------------------------------------------
 // 1. CONFIGURACIÓN GLOBAL DE COLORES Y ESTILOS
 // ---------------------------------------------------------------------------
+
+/// [AppColors]
+/// Clase estática para almacenar la paleta de colores principal de la aplicación.
+/// Usar una clase centralizada para colores facilita el mantenimiento y asegura consistencia visual.
 class AppColors {
   static const Color orange = Color(0xFFFF6B35); // Color de énfasis (Botones, Iconos activos)
   static const Color blue = Color(0xFF0F2537);   // Color corporativo (Fondos oscuros, Textos principales)
@@ -22,12 +26,15 @@ class AppColors {
   static const Color green = Color(0xFF10B981);  // Color para estados de éxito o dinero
 }
 
-// Función principal que arranca la aplicación
+/// [main]
+/// Función principal que Flutter ejecuta para iniciar la aplicación.
 void main() {
   runApp(const AppCarreosClient());
 }
 
-// Widget Raíz (Root): Configura el tema global y la ruta inicial.
+/// [AppCarreosClient]
+/// Widget Raíz (Root) de la aplicación. Es un [StatelessWidget] porque su configuración no cambia.
+/// Aquí se define el tema global ([ThemeData]) y se establece la pantalla de inicio.
 class AppCarreosClient extends StatelessWidget {
   const AppCarreosClient({super.key});
 
@@ -35,31 +42,35 @@ class AppCarreosClient extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'AppCarreos Usuario',
-      debugShowCheckedModeBanner: false, // Oculta la cinta roja de "Debug"
+      debugShowCheckedModeBanner: false, // Oculta la cinta roja de "Debug" en la esquina superior derecha.
+      
+      // [theme]: Define la apariencia global de la UI.
       theme: ThemeData(
-        textTheme: GoogleFonts.poppinsTextTheme(), // Aplica fuente Poppins globalmente
-        primaryColor: AppColors.orange,
-        scaffoldBackgroundColor: AppColors.background,
-        useMaterial3: true,
-        // Estilo global para los campos de texto (Inputs)
+        textTheme: GoogleFonts.poppinsTextTheme(), // Aplica la fuente Poppins globalmente a todos los textos.
+        primaryColor: AppColors.orange, // Color primario usado por algunos widgets de Material.
+        scaffoldBackgroundColor: AppColors.background, // Color de fondo por defecto para todas las pantallas ([Scaffold]).
+        useMaterial3: true, // Habilita el nuevo diseño de Material Design 3.
+        
+        // [inputDecorationTheme]: Estilo global para los campos de texto ([TextField]).
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none), // Bordes redondeados y sin línea.
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
-        // Estilo global para botones principales
+        
+        // [elevatedButtonTheme]: Estilo global para los botones principales ([ElevatedButton]).
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.orange,
-            foregroundColor: Colors.white, // Color del texto del botón
+            backgroundColor: AppColors.orange, // Color de fondo del botón.
+            foregroundColor: Colors.white, // Color del texto y del icono dentro del botón.
             padding: const EdgeInsets.symmetric(vertical: 15),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Botones con bordes redondeados.
             textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
       ),
-      home: const AuthScreen(), // Pantalla inicial: Login/Registro
+      home: const AuthScreen(), // La primera pantalla que se muestra es AuthScreen.
     );
   }
 }
@@ -67,6 +78,10 @@ class AppCarreosClient extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // 2. AUTENTICACIÓN (LOGIN / REGISTRO)
 // ---------------------------------------------------------------------------
+
+/// [AuthScreen]
+/// Pantalla de autenticación que maneja tanto el inicio de sesión como el registro.
+/// Es un [StatefulWidget] porque su contenido cambia dependiendo de si el usuario está en la vista de login o de registro.
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
   @override
@@ -74,15 +89,15 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  // Estado local para alternar entre vista de Login y Registro
+  // Estado local para controlar qué pestaña está activa: Login (true) o Registro (false).
   bool _isLogin = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blue, // Fondo corporativo
-      body: SafeArea( // Evita que el contenido choque con la barra de notificaciones
-        child: SingleChildScrollView( // Permite scroll en pantallas pequeñas
+      backgroundColor: AppColors.blue, // Fondo oscuro corporativo para la pantalla de autenticación.
+      body: SafeArea( // [SafeArea] asegura que la UI no se superponga con elementos del sistema (notch, barra de estado).
+        child: SingleChildScrollView( // Permite hacer scroll si el contenido no cabe en pantallas pequeñas.
           padding: const EdgeInsets.all(30.0),
           child: Column(
             children: [
@@ -92,7 +107,7 @@ class _AuthScreenState extends State<AuthScreen> {
               Text("AppCarreos", style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 40),
 
-              // Switch personalizado (Tabs)
+              // Switch personalizado (Tabs) para alternar entre Login y Registro.
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(50)),
@@ -105,8 +120,28 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Formulario condicional
+              // --- FORMULARIO CONDICIONAL ---
+              // Muestra campos adicionales si estamos en la vista de registro.
               if (!_isLogin) ...[
+                // --- NUEVO: WIDGET PARA SELECCIÓN DE FOTO DE PERFIL ---
+                GestureDetector(
+                  onTap: () {
+                    // Lógica para abrir la galería o la cámara. Por ahora, muestra un mensaje.
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Selector de imagen abierto (simulado)")));
+                  },
+                  child: Column(
+                    children: const [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.white10,
+                        child: Icon(FontAwesomeIcons.camera, color: AppColors.orange, size: 30),
+                      ),
+                      SizedBox(height: 8),
+                      Text("Añadir Foto", style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 20),
+                    ],
+                  ),
+                ),
                 _buildInput("Nombre Completo", FontAwesomeIcons.user),
                 const SizedBox(height: 15),
                 _buildInput("Celular", FontAwesomeIcons.phone),
@@ -118,16 +153,41 @@ class _AuthScreenState extends State<AuthScreen> {
 
               const SizedBox(height: 30),
 
+              // Botón principal de acción (Ingresar o Crear Cuenta).
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // PushReplacement elimina la pantalla de login del historial para que no puedan volver atrás
+                    // Navega a la pantalla principal. [PushReplacement] evita que el usuario pueda volver a esta pantalla.
                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainNavigationScreen()));
                   },
                   child: Text(_isLogin ? "INGRESAR" : "CREAR CUENTA"),
                 ),
               ),
+
+              // --- NUEVO: DIVISOR Y BOTONES DE REDES SOCIALES ---
+              if (_isLogin) ...[
+                const SizedBox(height: 30),
+                Row(
+                  children: const [
+                    Expanded(child: Divider(color: Colors.white24)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15),
+                      child: Text("O inicia sesión con", style: TextStyle(color: Colors.white70)),
+                    ),
+                    Expanded(child: Divider(color: Colors.white24)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSocialButton(FontAwesomeIcons.google, () { /* Lógica de login con Google */ }),
+                    const SizedBox(width: 25),
+                    _buildSocialButton(FontAwesomeIcons.facebook, () { /* Lógica de login con Facebook */ }),
+                  ],
+                )
+              ]
             ],
           ),
         ),
@@ -135,16 +195,18 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  // Construye cada pestaña del switch superior
+  /// [_buildTab]
+  /// Construye cada una de las pestañas del switch ("Iniciar Sesión" / "Registrarse").
+  /// [isLoginTab] indica si esta es la pestaña de login.
   Widget _buildTab(String text, bool isLoginTab) {
-    final bool isSelected = _isLogin == isLoginTab;
+    final bool isSelected = _isLogin == isLoginTab; // Comprueba si esta pestaña está seleccionada.
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _isLogin = isLoginTab), // setState redibuja la UI
+        onTap: () => setState(() => _isLogin = isLoginTab), // Actualiza el estado para cambiar la vista.
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.orange : Colors.transparent,
+            color: isSelected ? AppColors.orange : Colors.transparent, // Color naranja si está seleccionada.
             borderRadius: BorderRadius.circular(50),
           ),
           child: Text(text, textAlign: TextAlign.center, style: TextStyle(color: isSelected ? Colors.white : Colors.white60, fontWeight: FontWeight.bold)),
@@ -153,16 +215,33 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
+  /// [_buildInput]
+  /// Construye un campo de texto [TextField] personalizado para esta pantalla.
+  /// Tiene un estilo oscuro para que coincida con el fondo.
   Widget _buildInput(String hint, IconData icon, {bool isPassword = false}) {
     return TextField(
-      obscureText: isPassword,
-      style: const TextStyle(color: Colors.white),
+      obscureText: isPassword, // Oculta el texto si es una contraseña.
+      style: const TextStyle(color: Colors.white), // Color del texto que escribe el usuario.
       decoration: InputDecoration(
-        hintText: hint,
+        hintText: hint, // Texto de placeholder.
         hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-        prefixIcon: Icon(icon, color: AppColors.orange, size: 18),
-        fillColor: Colors.white.withOpacity(0.1),
+        prefixIcon: Icon(icon, color: AppColors.orange, size: 18), // Icono a la izquierda.
+        fillColor: Colors.white.withOpacity(0.1), // Fondo semitransparente.
       ),
+    );
+  }
+
+  /// [_buildSocialButton]
+  /// Construye un botón circular para el inicio de sesión con redes sociales.
+  Widget _buildSocialButton(IconData icon, VoidCallback onPressed) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        shape: const CircleBorder(),
+        padding: const EdgeInsets.all(15),
+        side: const BorderSide(color: Colors.white24, width: 2),
+      ),
+      child: Icon(icon, color: Colors.white, size: 22),
     );
   }
 }
