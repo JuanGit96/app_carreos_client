@@ -1,32 +1,33 @@
 // ---------------------------------------------------------------------------
-// APP CLIENTE (USUARIO) - VERSIÓN FINAL "INTERACTIVA"
+// APP CLIENTE (USUARIO) - VERSIÓN MAESTRA FINAL
 // ---------------------------------------------------------------------------
-// NOTA DIDÁCTICA:
-// Hemos agregado interactividad a todas las secciones estáticas.
-// Ahora los elementos "muertos" navegan a nuevas pantallas de detalle
-// o abren modales de configuración.
+// OBJETIVO DIDÁCTICO:
+// Este archivo demuestra un flujo completo de una app de logística (tipo Uber/Rappi).
+// Incluye: Navegación, Gestión de Estado (setState), Modales, Listas y Formularios.
 
-import 'package:flutter/material.dart'; // Librería base de UI de Google
-import 'package:google_fonts/google_fonts.dart'; // Fuentes bonitas
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Iconos profesionales
-import 'package:intl/intl.dart'; // Utilidades para formatear fechas y dinero
-import 'dart:async'; // Para temporizadores
+import 'package:flutter/material.dart'; // Librería core de Flutter (Material Design)
+import 'package:google_fonts/google_fonts.dart'; // Librería para fuentes modernas
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Iconos vectoriales pro
+import 'package:intl/intl.dart'; // Librería para formatos de fecha y moneda
+import 'dart:async'; // Librería para funciones asíncronas (Timers)
 
 // ---------------------------------------------------------------------------
-// 1. CONFIGURACIÓN GLOBAL
+// 1. CONFIGURACIÓN GLOBAL DE COLORES Y ESTILOS
 // ---------------------------------------------------------------------------
 class AppColors {
-  static const Color orange = Color(0xFFFF6B35);
-  static const Color blue = Color(0xFF0F2537);
-  static const Color background = Color(0xFFF8F9FA);
-  static const Color text = Color(0xFF1F2937);
-  static const Color green = Color(0xFF10B981);
+  static const Color orange = Color(0xFFFF6B35); // Color de énfasis (Botones, Iconos activos)
+  static const Color blue = Color(0xFF0F2537);   // Color corporativo (Fondos oscuros, Textos principales)
+  static const Color background = Color(0xFFF8F9FA); // Fondo gris muy claro para la app
+  static const Color text = Color(0xFF1F2937);   // Color de texto estándar
+  static const Color green = Color(0xFF10B981);  // Color para estados de éxito o dinero
 }
 
+// Función principal que arranca la aplicación
 void main() {
   runApp(const AppCarreosClient());
 }
 
+// Widget Raíz (Root): Configura el tema global y la ruta inicial.
 class AppCarreosClient extends StatelessWidget {
   const AppCarreosClient({super.key});
 
@@ -34,35 +35,37 @@ class AppCarreosClient extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'AppCarreos Usuario',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false, // Oculta la cinta roja de "Debug"
       theme: ThemeData(
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        textTheme: GoogleFonts.poppinsTextTheme(), // Aplica fuente Poppins globalmente
         primaryColor: AppColors.orange,
         scaffoldBackgroundColor: AppColors.background,
         useMaterial3: true,
+        // Estilo global para los campos de texto (Inputs)
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
+        // Estilo global para botones principales
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.orange,
-            foregroundColor: Colors.white,
+            foregroundColor: Colors.white, // Color del texto del botón
             padding: const EdgeInsets.symmetric(vertical: 15),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
       ),
-      home: const AuthScreen(),
+      home: const AuthScreen(), // Pantalla inicial: Login/Registro
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// 2. AUTENTICACIÓN
+// 2. AUTENTICACIÓN (LOGIN / REGISTRO)
 // ---------------------------------------------------------------------------
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -71,14 +74,15 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  // Estado local para alternar entre vista de Login y Registro
   bool _isLogin = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blue,
-      body: SafeArea(
-        child: SingleChildScrollView(
+      backgroundColor: AppColors.blue, // Fondo corporativo
+      body: SafeArea( // Evita que el contenido choque con la barra de notificaciones
+        child: SingleChildScrollView( // Permite scroll en pantallas pequeñas
           padding: const EdgeInsets.all(30.0),
           child: Column(
             children: [
@@ -88,6 +92,7 @@ class _AuthScreenState extends State<AuthScreen> {
               Text("AppCarreos", style: GoogleFonts.montserrat(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 40),
 
+              // Switch personalizado (Tabs)
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(50)),
@@ -100,6 +105,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 30),
 
+              // Formulario condicional
               if (!_isLogin) ...[
                 _buildInput("Nombre Completo", FontAwesomeIcons.user),
                 const SizedBox(height: 15),
@@ -116,6 +122,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    // PushReplacement elimina la pantalla de login del historial para que no puedan volver atrás
                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainNavigationScreen()));
                   },
                   child: Text(_isLogin ? "INGRESAR" : "CREAR CUENTA"),
@@ -128,11 +135,12 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
+  // Construye cada pestaña del switch superior
   Widget _buildTab(String text, bool isLoginTab) {
     final bool isSelected = _isLogin == isLoginTab;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _isLogin = isLoginTab),
+        onTap: () => setState(() => _isLogin = isLoginTab), // setState redibuja la UI
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
@@ -160,7 +168,7 @@ class _AuthScreenState extends State<AuthScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// 3. NAVEGACIÓN PRINCIPAL
+// 3. NAVEGACIÓN PRINCIPAL (BOTTOM NAVIGATION BAR)
 // ---------------------------------------------------------------------------
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -169,8 +177,9 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 0; // Controla qué pestaña está activa
 
+  // Lista de Pantallas disponibles en la barra inferior
   final List<Widget> _screens = [
     const HomeScreen(),
     const MyShipmentsScreen(),
@@ -180,7 +189,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: _screens[_currentIndex], // Muestra la pantalla según el índice
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
@@ -203,7 +212,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  // FUNCIÓN PARA CAMBIAR DIRECCIÓN (MODAL)
+  // Muestra un modal inferior para cambiar la dirección rápidamente
   void _showLocationPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -230,11 +239,6 @@ class HomeScreen extends StatelessWidget {
                 subtitle: const Text("Calle 140 # 11-20"),
                 onTap: () => Navigator.pop(context),
               ),
-              ListTile(
-                leading: const Icon(Icons.add, color: AppColors.orange),
-                title: const Text("Agregar nueva dirección"),
-                onTap: () => Navigator.pop(context),
-              ),
             ],
           ),
         );
@@ -250,7 +254,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- HEADER UBICACIÓN ACTUAL (AHORA INTERACTIVO) ---
+              // HEADER INTERACTIVO: Ubicación
               GestureDetector(
                 onTap: () => _showLocationPicker(context),
                 child: Padding(
@@ -276,7 +280,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // --- BÚSQUEDA ---
+              // BARRA DE BÚSQUEDA (Trigger del flujo principal)
               GestureDetector(
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddressSelectionScreen())),
                 child: Container(
@@ -311,7 +315,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
 
-              // --- DESTINOS RECIENTES (AHORA INTERACTIVOS) ---
+              // Lista horizontal de destinos recientes
               SizedBox(
                 height: 120,
                 child: ListView(
@@ -327,7 +331,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // --- BANNER PROMO ---
+              // Banner Promocional
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(20),
@@ -361,7 +365,7 @@ class HomeScreen extends StatelessWidget {
   Widget _recentPlaceCard(BuildContext context, String title, String subtitle) {
     return GestureDetector(
       onTap: () {
-        // Al tocar un reciente, saltamos directo al paso de la carga
+        // Al tocar un reciente, saltamos directo al input de carga
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ruta seleccionada: $title")));
         Navigator.push(context, MaterialPageRoute(builder: (context) => const CargoInputScreen()));
       },
@@ -386,7 +390,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// 5. FLUJO DE SOLICITUD (PASOS 1, 2, 3)
+// 5. FLUJO DE SOLICITUD (PASOS 1, 2)
 // ---------------------------------------------------------------------------
 
 // PASO 1: DIRECCIÓN
@@ -541,7 +545,9 @@ class _CargoInputScreenState extends State<CargoInputScreen> with SingleTickerPr
   }
 }
 
-// PASO 3: CONFIGURACIÓN
+// ---------------------------------------------------------------------------
+// 6. PASO 3: CONFIGURACIÓN Y CONFIRMACIÓN
+// ---------------------------------------------------------------------------
 class BookingConfigScreen extends StatefulWidget {
   const BookingConfigScreen({super.key});
   @override
@@ -554,6 +560,11 @@ class _BookingConfigScreenState extends State<BookingConfigScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
+  // Variables para el método de pago seleccionado
+  String _paymentMethodName = "Visa **** 4242";
+  IconData _paymentMethodIcon = FontAwesomeIcons.ccVisa;
+
+  // Funciones de selección de Fecha y Hora
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -578,6 +589,23 @@ class _BookingConfigScreenState extends State<BookingConfigScreen> {
     if (picked != null) setState(() => _selectedTime = picked);
   }
 
+  // Función para abrir la pantalla de selección de método de pago y esperar el resultado
+  Future<void> _changePaymentMethod() async {
+    // Navigator.push puede retornar un valor si la pantalla siguiente usa Navigator.pop(context, valor)
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PaymentMethodsScreen(isSelectionMode: true))
+    );
+
+    // Si recibimos un resultado (el usuario seleccionó algo), actualizamos el estado
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        _paymentMethodName = result['name'];
+        _paymentMethodIcon = result['icon'];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -596,6 +624,7 @@ class _BookingConfigScreenState extends State<BookingConfigScreen> {
             ]),
             const Divider(height: 30),
 
+            // Selector de Tiempo
             const Text("¿Cuándo?", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             Container(
@@ -608,6 +637,7 @@ class _BookingConfigScreenState extends State<BookingConfigScreen> {
               ),
             ),
 
+            // Selector de Fecha/Hora si es programado
             if (!_isImmediate) ...[
               const SizedBox(height: 20),
               Container(
@@ -624,20 +654,32 @@ class _BookingConfigScreenState extends State<BookingConfigScreen> {
             ],
 
             const SizedBox(height: 20),
+
+            // Selector Vehículo
             const Text("Vehículo Sugerido", style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             _vehicleOption(0, "Van Pequeña", "45.000", FontAwesomeIcons.shuttleVan),
             _vehicleOption(1, "Estacas", "65.000", FontAwesomeIcons.truckPickup),
 
             const SizedBox(height: 20),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(FontAwesomeIcons.ccVisa, color: AppColors.blue),
-              title: const Text("Visa **** 4242"),
-              trailing: const Text("Cambiar", style: TextStyle(color: AppColors.orange, fontWeight: FontWeight.bold)),
+
+            // SELECCIÓN DE PAGO (Interactiva)
+            const Text("Método de Pago", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Container(
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade200)),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+                leading: Icon(_paymentMethodIcon, color: AppColors.blue, size: 28),
+                title: Text(_paymentMethodName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                trailing: TextButton(
+                    onPressed: _changePaymentMethod,
+                    child: const Text("Cambiar", style: TextStyle(color: AppColors.orange, fontWeight: FontWeight.bold))
+                ),
+              ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -692,7 +734,10 @@ class _BookingConfigScreenState extends State<BookingConfigScreen> {
   }
 }
 
-// BUSCANDO (SIMULACIÓN)
+// ---------------------------------------------------------------------------
+// 7. PANTALLAS DE PROCESO (BUSCANDO Y TRACKING)
+// ---------------------------------------------------------------------------
+
 class FindingDriverScreen extends StatefulWidget {
   const FindingDriverScreen({super.key});
   @override
@@ -703,6 +748,7 @@ class _FindingDriverScreenState extends State<FindingDriverScreen> {
   @override
   void initState() {
     super.initState();
+    // Simula 3 segundos de búsqueda antes de encontrar conductor
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const TrackingScreen()));
     });
@@ -727,13 +773,27 @@ class _FindingDriverScreenState extends State<FindingDriverScreen> {
   }
 }
 
-// TRACKING (MAPA)
 class TrackingScreen extends StatelessWidget {
   const TrackingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // AppBar transparente para permitir navegación de regreso al HOME sin cancelar
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            // popUntil: Regresa hasta la primera ruta (Home) simulando minimizar el viaje
+            onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           Container(
@@ -744,7 +804,7 @@ class TrackingScreen extends StatelessWidget {
           ),
           Center(child: Container(width: 200, height: 4, color: AppColors.orange)),
           Positioned(
-            top: 50, right: 20,
+            top: 100, right: 20,
             child: CircleAvatar(backgroundColor: Colors.red, radius: 25, child: Icon(Icons.sos, color: Colors.white)),
           ),
           Positioned(
@@ -804,7 +864,7 @@ class TrackingScreen extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// 10. PERFIL Y CONFIGURACIÓN
+// 8. PERFIL Y CONFIGURACIONES
 // ---------------------------------------------------------------------------
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -823,7 +883,7 @@ class ProfileScreen extends StatelessWidget {
             const Text("maria@email.com", style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 30),
 
-            _menuItem(context, "Métodos de Pago", FontAwesomeIcons.creditCard, const PaymentMethodsScreen()),
+            _menuItem(context, "Métodos de Pago", FontAwesomeIcons.creditCard, const PaymentMethodsScreen(isSelectionMode: false)),
             _menuItem(context, "Direcciones Guardadas", FontAwesomeIcons.mapLocation, const SavedAddressesScreen()),
             _menuItem(context, "Centro de Ayuda", FontAwesomeIcons.headset, const HelpScreen()),
             _menuItem(context, "Configuración", FontAwesomeIcons.gear, const SettingsScreen()),
@@ -851,72 +911,65 @@ class ProfileScreen extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// 11. MIS ENVÍOS (HISTORIAL INTERACTIVO)
+// 9. GESTIÓN DE PAGOS Y DIRECCIONES
 // ---------------------------------------------------------------------------
-class MyShipmentsScreen extends StatelessWidget {
-  const MyShipmentsScreen({super.key});
+
+// Pantalla Dual: Sirve para gestionar tarjetas (Perfil) y para seleccionar (Booking)
+class PaymentMethodsScreen extends StatelessWidget {
+  final bool isSelectionMode;
+  const PaymentMethodsScreen({super.key, required this.isSelectionMode});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Mis Envíos")),
+      appBar: AppBar(title: Text(isSelectionMode ? "Seleccionar Método" : "Métodos de Pago")),
       body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const Text("En Curso", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.blue)),
-          const SizedBox(height: 10),
+          padding: const EdgeInsets.all(20),
+          children: [
+            // Opción Efectivo
+            _paymentOption(context, "Efectivo", FontAwesomeIcons.moneyBill, isSelectionMode),
+            const SizedBox(height: 15),
+            // Tarjetas guardadas
+            _paymentOption(context, "Visa **** 4242", FontAwesomeIcons.ccVisa, isSelectionMode),
+            _paymentOption(context, "Mastercard **** 9988", FontAwesomeIcons.ccMastercard, isSelectionMode),
 
-          // AL TOCAR UN ENVÍO EN CURSO, VAMOS AL TRACKING
-          _shipmentCard(context, "Mueble TV y Sillas", "Llegando al destino", AppColors.green, true, () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const TrackingScreen()));
-          }),
-
-          const SizedBox(height: 30),
-          const Text("Historial", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.blue)),
-          const SizedBox(height: 10),
-
-          // AL TOCAR UN HISTORIAL, VAMOS AL DETALLE
-          _shipmentCard(context, "Nevera Samsung", "Finalizado • Ayer", Colors.grey, false, () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
-          }),
-          _shipmentCard(context, "Cajas Oficina", "Finalizado • 20 Nov", Colors.grey, false, () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
-          }),
-        ],
+            const SizedBox(height: 20),
+            // Botón agregar
+            OutlinedButton.icon(
+                onPressed: (){
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Funcionalidad para agregar tarjeta")));
+                },
+                icon: const Icon(Icons.add),
+                label: const Text("Agregar Nueva Tarjeta")
+            )
+          ]
       ),
     );
   }
 
-  Widget _shipmentCard(BuildContext context, String title, String status, Color statusColor, bool isActive, VoidCallback onTap) {
+  Widget _paymentOption(BuildContext context, String name, IconData icon, bool selectable) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        if (selectable) {
+          // Si estamos seleccionando, devolvemos los datos a la pantalla anterior
+          Navigator.pop(context, {'name': name, 'icon': icon});
+        }
+      },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 15),
+        margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: isActive ? Border.all(color: AppColors.orange, width: 1.5) : null,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade200),
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(50)),
-              child: Icon(FontAwesomeIcons.box, color: isActive ? AppColors.orange : Colors.grey, size: 20),
-            ),
+            Icon(icon, size: 24, color: AppColors.blue),
             const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey)
+            Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Spacer(),
+            if (selectable) const Icon(Icons.touch_app, color: AppColors.orange, size: 20)
           ],
         ),
       ),
@@ -924,60 +977,65 @@ class MyShipmentsScreen extends StatelessWidget {
   }
 }
 
-// NUEVA PANTALLA: DETALLE DE ENVÍO PASADO
-class ShipmentDetailScreen extends StatelessWidget {
-  const ShipmentDetailScreen({super.key});
+class SavedAddressesScreen extends StatelessWidget {
+  const SavedAddressesScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Mis Direcciones")),
+      body: ListView(children: const [
+        ListTile(leading: Icon(Icons.home), title: Text("Casa"), subtitle: Text("Calle 122 # 15-45")),
+        ListTile(leading: Icon(Icons.work), title: Text("Oficina"), subtitle: Text("Cra 7 # 72-10")),
+      ]),
+      floatingActionButton: FloatingActionButton(onPressed: (){}, backgroundColor: AppColors.orange, child: const Icon(Icons.add, color: Colors.white)),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 10. AYUDA Y CONFIGURACIÓN (INTERACTIVO)
+// ---------------------------------------------------------------------------
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _currentLanguage = "Español";
+
+  // Modal para cambiar idioma
+  void _showLanguageDialog() {
+    showDialog(
+        context: context,
+        builder: (context) => SimpleDialog(
+          title: const Text("Seleccionar Idioma"),
+          children: [
+            SimpleDialogOption(onPressed: () { setState(() => _currentLanguage = "Español"); Navigator.pop(context); }, child: const Text("Español")),
+            SimpleDialogOption(onPressed: () { setState(() => _currentLanguage = "English"); Navigator.pop(context); }, child: const Text("English")),
+            SimpleDialogOption(onPressed: () { setState(() => _currentLanguage = "Português"); Navigator.pop(context); }, child: const Text("Português")),
+          ],
+        )
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Detalles del Envío")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Icon(Icons.check_circle, color: AppColors.green, size: 80),
-            const SizedBox(height: 10),
-            const Text("Finalizado con Éxito", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-            const Text("\$ 55.000 COP", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.blue)),
-            const Divider(height: 40),
-            _infoRow(Icons.calendar_today, "Fecha", "24 Nov, 10:30 AM"),
-            const SizedBox(height: 20),
-            _infoRow(Icons.person, "Conductor", "Carlos Rodriguez"),
-            const SizedBox(height: 20),
-            _infoRow(Icons.location_on, "Origen", "Calle 122 # 15-45"),
-            const SizedBox(height: 20),
-            _infoRow(Icons.flag, "Destino", "Cra 7 # 72-10"),
-            const Spacer(),
-            OutlinedButton(onPressed: (){}, child: const Text("Descargar Factura")),
-          ],
+      appBar: AppBar(title: const Text("Configuración")),
+      body: ListView(children: [
+        ListTile(title: const Text("Notificaciones Push"), trailing: const Icon(Icons.toggle_on, color: Colors.green, size: 30)),
+        ListTile(
+          title: const Text("Idioma"),
+          trailing: Text("$_currentLanguage >", style: const TextStyle(color: Colors.grey)),
+          onTap: _showLanguageDialog, // Abre el modal
         ),
-      ),
-    );
-  }
-
-  Widget _infoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.grey),
-        const SizedBox(width: 15),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        )
-      ],
+        ListTile(title: const Text("Eliminar Cuenta"), textColor: Colors.red, onTap: (){}),
+      ]),
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// 12. PANTALLAS DE AYUDA MEJORADAS
-// ---------------------------------------------------------------------------
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
@@ -998,17 +1056,13 @@ class HelpScreen extends StatelessWidget {
           trailing: const Icon(Icons.arrow_forward_ios, size: 14),
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FAQScreen())),
         ),
-        const Divider(),
-        ListTile(title: const Text("Línea de emergencia"), leading: const Icon(Icons.phone, color: Colors.red)),
       ]),
     );
   }
 }
 
-// NUEVA PANTALLA: REPORTAR PROBLEMA
 class ReportProblemScreen extends StatelessWidget {
   const ReportProblemScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1019,16 +1073,13 @@ class ReportProblemScreen extends StatelessWidget {
           children: [
             const Text("Cuéntanos qué sucedió con tu servicio", style: TextStyle(fontSize: 16)),
             const SizedBox(height: 20),
-            const TextField(
-              maxLines: 5,
-              decoration: InputDecoration(hintText: "Describe aquí el incidente (retraso, daño, cobro extra...)", alignLabelWithHint: true),
-            ),
+            const TextField(maxLines: 5, decoration: InputDecoration(hintText: "Describe aquí el incidente...", alignLabelWithHint: true)),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Reporte enviado. Te contactaremos pronto.")));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Reporte enviado.")));
                   Navigator.pop(context);
                 },
                 child: const Text("ENVIAR REPORTE"),
@@ -1041,66 +1092,86 @@ class ReportProblemScreen extends StatelessWidget {
   }
 }
 
-// NUEVA PANTALLA: PREGUNTAS FRECUENTES
 class FAQScreen extends StatelessWidget {
   const FAQScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Preguntas Frecuentes")),
       body: ListView(
         children: const [
-          ExpansionTile(title: Text("¿Mi carga está asegurada?"), children: [Padding(padding: EdgeInsets.all(15.0), child: Text("Sí, todos los envíos realizados a través de la app cuentan con una póliza básica de hasta 50 millones de pesos."))]),
-          ExpansionTile(title: Text("¿Cómo se calcula la tarifa?"), children: [Padding(padding: EdgeInsets.all(15.0), child: Text("La tarifa base incluye el tipo de vehículo y la distancia. Servicios extra como ayudantes o paradas tienen costo adicional."))]),
-          ExpansionTile(title: Text("¿Puedo cancelar el servicio?"), children: [Padding(padding: EdgeInsets.all(15.0), child: Text("Puedes cancelar sin costo hasta 5 minutos después de que el conductor haya aceptado."))]),
+          ExpansionTile(title: Text("¿Mi carga está asegurada?"), children: [Padding(padding: EdgeInsets.all(15.0), child: Text("Sí, todos los envíos realizados a través de la app cuentan con una póliza básica."))]),
+          ExpansionTile(title: Text("¿Cómo calculan la tarifa?"), children: [Padding(padding: EdgeInsets.all(15.0), child: Text("Basado en km, tiempo y tipo de vehículo."))]),
         ],
       ),
     );
   }
 }
 
-// DUMMY SCREENS (SIN CAMBIOS)
-class PaymentMethodsScreen extends StatelessWidget {
-  const PaymentMethodsScreen({super.key});
+// ---------------------------------------------------------------------------
+// 11. MIS ENVÍOS
+// ---------------------------------------------------------------------------
+class MyShipmentsScreen extends StatelessWidget {
+  const MyShipmentsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Métodos de Pago")),
-      body: ListView(padding: const EdgeInsets.all(20), children: [
-        ListTile(leading: const Icon(FontAwesomeIcons.ccVisa, size: 30), title: const Text("Visa **** 4242"), trailing: const Icon(Icons.check, color: Colors.green)),
-        const SizedBox(height: 20),
-        OutlinedButton(onPressed: (){}, child: const Text("Agregar Tarjeta"))
-      ]),
+      appBar: AppBar(title: const Text("Mis Envíos")),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text("En Curso", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.blue)),
+          const SizedBox(height: 10),
+          _shipmentCard(context, "Mueble TV y Sillas", "Llegando al destino", AppColors.green, true, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const TrackingScreen()));
+          }),
+          const SizedBox(height: 30),
+          const Text("Historial", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.blue)),
+          const SizedBox(height: 10),
+          _shipmentCard(context, "Nevera Samsung", "Finalizado • Ayer", Colors.grey, false, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _shipmentCard(BuildContext context, String title, String status, Color statusColor, bool isActive, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: isActive ? Border.all(color: AppColors.orange, width: 1.5) : null, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
+        child: Row(children: [
+          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(50)), child: Icon(FontAwesomeIcons.box, color: isActive ? AppColors.orange : Colors.grey, size: 20)),
+          const SizedBox(width: 15),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Text(status, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12))])),
+          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey)
+        ]),
+      ),
     );
   }
 }
 
-class SavedAddressesScreen extends StatelessWidget {
-  const SavedAddressesScreen({super.key});
+class ShipmentDetailScreen extends StatelessWidget {
+  const ShipmentDetailScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Mis Direcciones")),
-      body: ListView(children: const [
-        ListTile(leading: Icon(Icons.home), title: Text("Casa"), subtitle: Text("Calle 122 # 15-45")),
-        ListTile(leading: Icon(Icons.work), title: Text("Oficina"), subtitle: Text("Cra 7 # 72-10")),
-      ]),
-      floatingActionButton: FloatingActionButton(onPressed: (){}, backgroundColor: AppColors.orange, child: const Icon(Icons.add, color: Colors.white)),
-    );
-  }
-}
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Configuración")),
-      body: ListView(children: const [
-        ListTile(title: Text("Notificaciones Push"), trailing: Icon(Icons.toggle_on, color: Colors.green, size: 30)),
-        ListTile(title: Text("Eliminar Cuenta"), textColor: Colors.red),
-      ]),
+      appBar: AppBar(title: const Text("Detalles del Envío")),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(children: [
+          const Icon(Icons.check_circle, color: AppColors.green, size: 80),
+          const SizedBox(height: 10),
+          const Text("Finalizado con Éxito", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          const Text("\$ 55.000 COP", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.blue)),
+          const Divider(height: 40),
+          // Aquí irían más detalles (filas de información)
+        ]),
+      ),
     );
   }
 }
