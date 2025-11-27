@@ -334,28 +334,44 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // HEADER INTERACTIVO: Ubicación
-              GestureDetector(
-                onTap: () => _showLocationPicker(context),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Recoger en", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          Row(
-                            children: const [
-                              Text("Calle 122 # 15-45", style: TextStyle(color: AppColors.blue, fontWeight: FontWeight.bold, fontSize: 16)),
-                              Icon(Icons.keyboard_arrow_down, color: AppColors.orange)
-                            ],
-                          ),
-                        ],
+// HEADER DIVIDIDO: UBICACIÓN Y PERFIL
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // 1. LADO IZQUIERDO: TEXTO DE DIRECCIÓN (Abre selector)
+                    Expanded( // Usamos Expanded para que el área de toque ocupe todo el espacio disponible
+                      child: GestureDetector(
+                        onTap: () => _showLocationPicker(context),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Recoger en", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                            Row(
+                              children: const [
+                                Text("Calle 122 # 15-45", style: TextStyle(color: AppColors.blue, fontWeight: FontWeight.bold, fontSize: 16)),
+                                Icon(Icons.keyboard_arrow_down, color: AppColors.orange)
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                      const CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person, color: AppColors.blue))
-                    ],
-                  ),
+                    ),
+
+                    // 2. LADO DERECHO: FOTO DE PERFIL (Va al perfil)
+                    GestureDetector(
+                      onTap: () {
+                        // Navega a la pantalla de Perfil
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                      },
+                      child: const CircleAvatar(
+                        radius: 24,
+                        backgroundImage: NetworkImage("https://i.pravatar.cc/150?img=12"), // Foto real simulada
+                        backgroundColor: Colors.white,
+                      ),
+                    )
+                  ],
                 ),
               ),
 
@@ -1208,7 +1224,30 @@ class MyShipmentsScreen extends StatelessWidget {
           const SizedBox(height: 30),
           const Text("Historial", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.blue)),
           const SizedBox(height: 10),
+
+          // 1. Finalizado Reciente
           _shipmentCard(context, "Nevera Samsung", "Finalizado • Ayer", Colors.grey, false, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
+          }),
+
+          // 2. Finalizado anterior
+          _shipmentCard(context, "Cajas de Oficina", "Finalizado • 20 Nov", Colors.grey, false, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
+          }),
+
+          // 3. Cancelado (Para mostrar variedad de estados)
+          _shipmentCard(context, "Sofá Cama", "Cancelado • 15 Nov", Colors.red, false, () {
+            // Podríamos llevar a un detalle diferente, pero por ahora usamos el mismo
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
+          }),
+
+          // 4. Antiguo
+          _shipmentCard(context, "Mesa de Comedor", "Finalizado • 10 Oct", Colors.grey, false, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
+          }),
+
+          // 5. Más antiguo
+          _shipmentCard(context, "Material Construcción", "Finalizado • 05 Sep", Colors.grey, false, () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const ShipmentDetailScreen()));
           }),
         ],
@@ -1234,22 +1273,173 @@ class MyShipmentsScreen extends StatelessWidget {
   }
 }
 
+// PANTALLA DE DETALLE COMPLETO DEL ENVÍO
 class ShipmentDetailScreen extends StatelessWidget {
   const ShipmentDetailScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Detalles del Envío")),
-      body: Padding(
+      appBar: AppBar(title: const Text("Detalle del Servicio")),
+      body: SingleChildScrollView( // Scroll vital para mostrar toda la info
         padding: const EdgeInsets.all(20),
-        child: Column(children: [
-          const Icon(Icons.check_circle, color: AppColors.green, size: 80),
-          const SizedBox(height: 10),
-          const Text("Finalizado con Éxito", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-          const Text("\$ 55.000 COP", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.blue)),
-          const Divider(height: 40),
-          // Aquí irían más detalles (filas de información)
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. HEADER DE ESTADO
+            Center(
+              child: Column(
+                children: [
+                  const Icon(Icons.check_circle, color: AppColors.green, size: 60),
+                  const SizedBox(height: 10),
+                  const Text("Finalizado con Éxito", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                  const Text("Jueves, 24 Nov • 10:30 AM", style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 10),
+                  const Text("\$ 55.000", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.blue)),
+                ],
+              ),
+            ),
+            const Divider(height: 40),
+
+            // 2. INFORMACIÓN DEL CONDUCTOR
+            const Text("Tu Conductor", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+              ),
+              child: Row(
+                children: [
+                  const CircleAvatar(radius: 25, backgroundImage: NetworkImage("https://i.pravatar.cc/150?img=60")),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text("Juan Pérez", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text("Chevrolet N300 • FNK-123", style: TextStyle(color: Colors.grey, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(8)),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.star, color: Colors.amber, size: 16),
+                        SizedBox(width: 4),
+                        Text("4.9", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 25),
+
+            // 3. RUTA (Línea de tiempo)
+            const Text("Detalle de Ruta", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 10),
+            _locationRow(Icons.circle, Colors.green, "Recogida - 10:30 AM", "Calle 122 # 15-45, Bogotá"),
+            Padding(
+              padding: const EdgeInsets.only(left: 11), // Alineado con el icono
+              child: Container(height: 30, width: 2, color: Colors.grey.shade300),
+            ),
+            _locationRow(Icons.location_on, AppColors.orange, "Entrega - 11:15 AM", "Cra 7 # 72-10, Bogotá"),
+
+            const SizedBox(height: 25),
+
+            // 4. CARGA TRANSPORTADA
+            const Text("Carga", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(10)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text("• 1x Nevera Samsung 200L"),
+                  Text("• 2x Cajas de cartón grandes"),
+                  Text("• 1x Silla de oficina"),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // 5. DESGLOSE DE PAGO
+            const Text("Resumen de Pago", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 10),
+            _priceRow("Tarifa Base", "\$ 40.000"),
+            _priceRow("Distancia (5 km)", "\$ 5.000"),
+            _priceRow("Ayudante Extra", "\$ 10.000"),
+            const Divider(),
+            _priceRow("Total Pagado", "\$ 55.000", isTotal: true),
+
+            const SizedBox(height: 10),
+            Row(
+              children: const [
+                Icon(FontAwesomeIcons.ccVisa, size: 20, color: AppColors.blue),
+                SizedBox(width: 10),
+                Text("Pagado con Visa **** 4242", style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
+            ),
+
+            const SizedBox(height: 30),
+
+            // 6. BOTONES DE ACCIÓN
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                  onPressed: (){},
+                  icon: const Icon(Icons.download),
+                  label: const Text("Descargar Factura")
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(child: TextButton(onPressed: (){}, child: const Text("Reportar un problema", style: TextStyle(color: Colors.red)))),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Widget auxiliar para filas de ubicación
+  Widget _locationRow(IconData icon, Color color, String label, String address) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(width: 15),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(address, style: const TextStyle(fontWeight: FontWeight.w600)),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  // Widget auxiliar para filas de precio
+  Widget _priceRow(String label, String value, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, fontSize: isTotal ? 16 : 14)),
+          Text(value, style: TextStyle(fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, fontSize: isTotal ? 16 : 14, color: isTotal ? AppColors.blue : Colors.black)),
+        ],
       ),
     );
   }
